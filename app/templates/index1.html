@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <title>Translation Service</title>
 
-      <!-- ✅ Dark mode handling -->
+    <!-- ✅ Dark mode handling -->
     <script>
         if (
           localStorage.getItem("color-theme") === "dark" ||
@@ -50,8 +50,8 @@
     <form id="translationForm" class="space-y-6">
         <div>
             <label for="textToTranslate" class="block mb-2 text-sm font-medium">Text to translate</label>
-            <textarea  id="textToTranslate" placeholder="Enter text"
-                   class="w-full p-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+            <textarea id="textToTranslate" placeholder="Enter text"
+                      class="w-full p-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
         </div>
 
         <div>
@@ -112,47 +112,106 @@
 
 <!-- ✅ Theme toggle logic -->
 <script>
-  const themeToggleBtn = document.getElementById('theme-toggle');
-  const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-  const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+    const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
-  // On load: set icon based on current theme
-  if (
-    localStorage.getItem('color-theme') === 'dark' ||
-    (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  ) {
-    document.documentElement.classList.add('dark');
-    themeToggleLightIcon.classList.remove('hidden');
-  } else {
-    document.documentElement.classList.remove('dark');
-    themeToggleDarkIcon.classList.remove('hidden');
-  }
-
-  themeToggleBtn.addEventListener('click', () => {
-    // Toggle icon
-    themeToggleDarkIcon.classList.toggle('hidden');
-    themeToggleLightIcon.classList.toggle('hidden');
-
-    // If set in localStorage
-    if (localStorage.getItem('color-theme')) {
-      if (localStorage.getItem('color-theme') === 'light') {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('color-theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('color-theme', 'light');
-      }
+    // On load: set icon based on current theme
+    if (
+      localStorage.getItem('color-theme') === 'dark' ||
+      (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark');
+      themeToggleLightIcon.classList.remove('hidden');
     } else {
-      // If not set, toggle based on class
-      if (document.documentElement.classList.contains('dark')) {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('color-theme', 'light');
-      } else {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('color-theme', 'dark');
-      }
+      document.documentElement.classList.remove('dark');
+      themeToggleDarkIcon.classList.remove('hidden');
     }
-  });
+
+    themeToggleBtn.addEventListener('click', () => {
+      // Toggle icon
+      themeToggleDarkIcon.classList.toggle('hidden');
+      themeToggleLightIcon.classList.toggle('hidden');
+
+      // If set in localStorage
+      if (localStorage.getItem('color-theme')) {
+        if (localStorage.getItem('color-theme') === 'light') {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('color-theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('color-theme', 'light');
+        }
+      } else {
+        // If not set, toggle based on class
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('color-theme', 'light');
+        } else {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('color-theme', 'dark');
+        }
+      }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    async function submitTranslation(){
+    const text = document.getElementById('textToTranslate').value
+    const languages = document.getElementById('languages').value.split(',').map(lang => lang.trim());
+
+    if (!text || languages === 0 || languages[0]){
+    alert("Please provide both text and target language for the translation.");
+    return;
+    }
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    progressBar.classList.remove('bg-success');
+    progressBar.classList.add('bg-primary');
+    progressBar.style.width = '0%';
+    progressText.textContent= 'Translation in Progress';
+
+    try{
+        const response = await axios.post('localhost:8000/translate',{
+            text:text,
+            languages:languages
+        });
+        const taskId = response.data.task_id;
+        alert(`Task ID: ${taskId}`)
+
+        document.getElementById('progress-container').style.display='block';
+        document.getElementById('results').style.display='none';
+        document.getElementById('status-container').style.display='none';
+        document.getElementById('content-container').style.display='none';
+
+        let translationResult = null;
+        let progress = 0;
+        while (progress <100){
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        const resultResponse = await axios.get( `localhost:8000/translate)${taskId}`);
+        translationResult = resultResponse.data;
+        if (translationResult=== 'completed'){
+        progress = 100;}
+        else {
+        progress.style.width = `50%`;
+        }
+
+    }
+    progressBar.classList.remove('bg-primary');
+    progressBar.classList.add('bg-success');
+    progressBar.style.width = `100%`;
+    progressText.textContent = 'Translation complete!';
+
+    document.getElementById('translationResults').textContent = JSON.stringify(translationResults,
+    document.getElementById('results').style.display='block';
+    } catch (error){
+    console.error("Error submitting translation",error);
+    alert("An error occurred while translating, please try again.")
+    }
+
+    }
+
+    // Todo 25:37
 </script>
 </body>
 </html>
