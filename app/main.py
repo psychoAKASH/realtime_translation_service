@@ -3,15 +3,13 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.templating import Jinja2Templates
-import schemas
-import crud
-import models
-from database import get_db,engine
+from app import schemas, crud, models
+from app.database import get_db, engine
 
 models.Base.metadata.create_all(bind=engine)
 app=FastAPI()
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/templates")
 
 @app.get('/index',response_class=HTMLResponse)
 def index(request:Request):
@@ -19,6 +17,10 @@ def index(request:Request):
 
 # Enable CORS
 # docker compose up --build
+# docker exec -it translation_postgres psql -U myuser -d translationdb
+# \dt
+# SELECT * FROM translation_tasks;
+# \q
 
 app.add_middleware(
     CORSMiddleware,
