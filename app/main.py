@@ -18,6 +18,7 @@ def index(request:Request):
     return templates.TemplateResponse("index.html",{"request":request})
 
 # Enable CORS
+# docker compose up --build
 
 app.add_middleware(
     CORSMiddleware,
