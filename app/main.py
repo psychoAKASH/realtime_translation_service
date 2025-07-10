@@ -7,6 +7,7 @@ from app import schemas, crud, models
 from app.database import get_db, engine
 
 models.Base.metadata.create_all(bind=engine)
+
 app=FastAPI()
 
 templates = Jinja2Templates(directory="app/templates")
